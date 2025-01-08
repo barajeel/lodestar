@@ -328,7 +328,7 @@ export class PeerManager {
       const oldMetadata = peerData.metadata;
       const csc = (metadata as Partial<peerdas.Metadata>).csc ?? this.config.CUSTODY_REQUIREMENT;
       const nodeId = peerData?.nodeId ?? computeNodeId(peer);
-      const custodySubnets = csc !== oldMetadata?.csc ? getDataColumnSubnets(nodeId, csc) : oldMetadata?.custodySubnets;
+      const custodySubnets = (csc !== oldMetadata?.csc || oldMetadata?.custodySubnets == null)? getDataColumnSubnets(nodeId, csc) : oldMetadata?.custodySubnets;
       peerData.metadata = {
         seqNumber: metadata.seqNumber,
         attnets: metadata.attnets,
