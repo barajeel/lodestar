@@ -413,13 +413,13 @@ export class PeerManager {
       const custodySubnetCount = peerData?.metadata?.csc;
 
       const peerCustodySubnetCount = custodySubnetCount ?? this.config.CUSTODY_REQUIREMENT;
-      const peerCustodySubnets = getDataColumnSubnets(nodeId, peerCustodySubnetCount);
+      // on metadata, we should have custodySubnets
+      const peerCustodySubnets = peerData?.metadata?.custodySubnets ?? getDataColumnSubnets(nodeId, peerCustodySubnetCount);
 
       const matchingSubnetsNum = this.sampleSubnets.reduce(
         (acc, elem) => acc + (peerCustodySubnets.includes(elem) ? 1 : 0),
         0
       );
-      const hasAllColumns = matchingSubnetsNum === this.sampleSubnets.length;
       const clientAgent = peerData?.agentClient ?? ClientKind.Unknown;
 
       this.logger.warn(`onStatus ${custodySubnetCount == undefined ? "undefined custody count assuming 4" : ""}`, {
@@ -427,13 +427,13 @@ export class PeerManager {
         myNodeId: toHexString(this.nodeId),
         peerId: peer.toString(),
         custodySubnetCount,
-        hasAllColumns,
+        matchingSubnetsNum,
         peerCustodySubnets: peerCustodySubnets.join(" "),
         mySampleSubnets: this.sampleSubnets.join(" "),
         clientAgent,
       });
 
-      // coule be optimized by directly using the previously calculated subnet
+      // TODO: could be optimized by directly using the previously calculated subnet
       const dataColumns = getDataColumns(nodeId, peerCustodySubnetCount);
       this.networkEventBus.emit(NetworkEvent.peerConnected, {
         peer: peer.toString(),
